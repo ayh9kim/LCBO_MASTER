@@ -10,7 +10,7 @@ import numpy as np
 import datetime
 
 alc_one_shot = 45 * .4
-dataFileLoc = 'D://Doc//Project//Blog//products.csv'
+dataFileLoc = 'products.csv'
 df = pd.read_csv(dataFileLoc)
 
 ### Proprocess
