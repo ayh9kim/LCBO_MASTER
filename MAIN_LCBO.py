@@ -70,7 +70,7 @@ df_seasonal = df_main[df_main['is_seasonal'] == 't']
 
 ### Analysis
 
-## Comparison
+## Comparison Visualization
 
 # Distribution
 trace1 = Histogram(x=df_beer['Price-per-10-shots'], opacity=0.75)
