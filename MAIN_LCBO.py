@@ -8,6 +8,9 @@ Created on Mon May 22 18:45:06 2017
 import pandas as pd
 import numpy as np
 import datetime
+from plotly.offline import download_plotlyjs, init_notebook_mode, iplot # pip install plotly on Anaconda Prompt
+from plotly.graph_objs import *
+init_notebook_mode()
 
 alc_one_shot = 45 * .4
 dataFileLoc = 'products.csv'
@@ -56,14 +59,29 @@ df_main=df_main.sort(['Price-per-10-shots'])
 # Sake
 sake_name = 'Sake/Rice Wine'
 df_sake = df_main[df_main['Tertiary Category'] == sake_name]
+
 # Beer
 df_beer = df_main[df_main['Primary Category'] == 'Beer']
 df_beer = df_beer[df_beer['Secondary Category'] != 'Specialty']
-# Seasonal drinks
 
+# Seasonal drinks
+df_seasonal = df_main[df_main['is_seasonal'] == 't']
 
 
 ### Analysis
+
+## Comparison
+
+# Distribution
+trace1 = Histogram(x=df_beer['Price-per-10-shots'], opacity=0.75)
+trace2 = Histogram(x=df_sake['Price-per-10-shots'], opacity=0.75)
+
+data = [trace1, trace2]
+layout = Layout(barmode='overlay')
+
+fig = dict(data=data, layout=layout)
+
+plotly.offline.plot(fig, filename='Beer vs. Sake')
 
 # Primary Category
 
