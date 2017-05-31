@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
 """
 Created on Mon May 22 18:45:06 2017
-
 @author: ayh9k
 """
 
 import pandas as pd
 import numpy as np
 import datetime
+from plotly.offline import download_plotlyjs, init_notebook_mode, iplot # pip install plotly on Anaconda Prompt
+from plotly.graph_objs import *
+init_notebook_mode()
 
 alc_one_shot = 45 * .4
 dataFileLoc = 'products.csv'
@@ -41,9 +42,7 @@ df_main['Release Date'] = pd.to_datetime(df_main['Release Date'])
         
 df_main['Price-to-Alcohol'] = df_main['Regular Price (CAD $)']/df_main['Alcohol Content (mL)']
 df_main['Alcohol-to-Sugar'] = df_main['Alcohol Content (mL)']/df_main['Sugar (g/L)']/1000*100
-df_main['Alcohol%'] = df_main['Alcohol Content (mL)']/df_main['Volume (mL)']
-df_main['Country'] = pd.DataFrame(pd.Series(df_main['origin']).str.split(',').str[0])
-df_main['Region'] =  pd.DataFrame(pd.Series(df_main['origin']).str.split(',').str[1])      
+   
 # Released recently
 start_date = datetime.datetime(2017, 1, 1)
 df_recent = df_main[df_main['Release Date'].notnull()]
@@ -51,7 +50,6 @@ df_recent = df_main[df_main['Release Date'] >= start_date]
 
 # Only a few stocks available
 df_main['Price-per-10-shots'] = (df_main['Regular Price (CAD $)']/df_main['Alcohol Content (mL)'])*alc_one_shot*10
-
 df_main=df_main.sort(['Price-per-10-shots'])
 
 # Kosher drinks
@@ -59,33 +57,28 @@ df_main=df_main.sort(['Price-per-10-shots'])
 # Sake
 sake_name = 'Sake/Rice Wine'
 df_sake = df_main[df_main['Tertiary Category'] == sake_name]
+
 # Beer
 df_beer = df_main[df_main['Primary Category'] == 'Beer']
 df_beer = df_beer[df_beer['Secondary Category'] != 'Specialty']
-# Gin
-df_gin = df_main[df_main['Secondary Category'] == 'Gin']
-# Tequila
-df_tequila = df_main[df_main['Secondary Category'] == 'Tequila']
-# Champagne
-df_champagne = df_main[(df_main['Secondary Category'] == 'Champagne' )| (df_main['Secondary Category'] == 'Sparkling Wine' )]
+
 # Seasonal drinks
-<<<<<<< HEAD
 df_seasonal = df_main[df_main['is_seasonal'] == 't']
 
 
 ### Analysis
 
-## Comparison Visualization
+## Comparison
 
 # Distribution
 trace1 = Histogram(x=df_beer['Price-per-10-shots'], opacity=0.75)
 trace2 = Histogram(x=df_sake['Price-per-10-shots'], opacity=0.75)
-=======
->>>>>>> 2e55719488f1c3102a9c872696744fbe3609b260
 
+data = [trace1, trace2]
+layout = Layout(barmode='overlay')
 
+fig = dict(data=data, layout=layout)
 
-### Analysis
+plotly.offline.plot(fig, filename='Beer vs. Sake')
 
 # Primary Category
-
