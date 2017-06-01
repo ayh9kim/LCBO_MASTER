@@ -6,6 +6,7 @@ Created on Mon May 22 18:45:06 2017
 import pandas as pd
 import numpy as np
 import datetime
+import plotly
 from plotly.offline import download_plotlyjs, init_notebook_mode, iplot # pip install plotly on Anaconda Prompt
 from plotly.graph_objs import *
 init_notebook_mode()
@@ -42,6 +43,9 @@ df_main['Release Date'] = pd.to_datetime(df_main['Release Date'])
         
 df_main['Price-to-Alcohol'] = df_main['Regular Price (CAD $)']/df_main['Alcohol Content (mL)']
 df_main['Alcohol-to-Sugar'] = df_main['Alcohol Content (mL)']/df_main['Sugar (g/L)']/1000*100
+df_main['Alcohol%'] = df_main['Alcohol Content (mL)']/df_main['Volume (mL)']
+df_main['Country'] = pd.DataFrame(pd.Series(df_main['origin']).str.split(',').str[0])
+df_main['Region'] =  pd.DataFrame(pd.Series(df_main['origin']).str.split(',').str[1])     
    
 # Released recently
 start_date = datetime.datetime(2017, 1, 1)
@@ -57,12 +61,15 @@ df_main=df_main.sort(['Price-per-10-shots'])
 # Sake
 sake_name = 'Sake/Rice Wine'
 df_sake = df_main[df_main['Tertiary Category'] == sake_name]
-
 # Beer
 df_beer = df_main[df_main['Primary Category'] == 'Beer']
 df_beer = df_beer[df_beer['Secondary Category'] != 'Specialty']
-
-# Seasonal drinks
+# Gin
+df_gin = df_main[df_main['Secondary Category'] == 'Gin']
+# Tequila
+df_tequila = df_main[df_main['Secondary Category'] == 'Tequila']
+# Champagne
+df_champagne = df_main[(df_main['Secondary Category'] == 'Champagne' )| (df_main['Secondary Category'] == 'Sparkling Wine' )]
 df_seasonal = df_main[df_main['is_seasonal'] == 't']
 
 
@@ -71,11 +78,30 @@ df_seasonal = df_main[df_main['is_seasonal'] == 't']
 ## Comparison
 
 # Distribution
-trace1 = Histogram(x=df_beer['Price-per-10-shots'], opacity=0.75)
-trace2 = Histogram(x=df_sake['Price-per-10-shots'], opacity=0.75)
-
-data = [trace1, trace2]
-layout = Layout(barmode='overlay')
+trace1 = Histogram(x=df_beer['Price-per-10-shots'], opacity=0.75,name='Beer')
+trace2 = Histogram(x=df_sake['Price-per-10-shots'], opacity=0.75,name='Sake')
+trace3 = Histogram(x=df_gin['Price-per-10-shots'], opacity=0.75,name='Gin')
+trace4 = Histogram(x=df_tequila['Price-per-10-shots'], opacity=0.75,name='Tequila')
+data = [trace1, trace2, trace3, trace4]
+layout = Layout(barmode='overlay',
+                title='Cost of Alcohol Converting to 10 Vodka Shots Equivalent',
+                xaxis=dict(
+                title='Price per 10 shots (in CAD$)',
+                titlefont=dict(
+                    family='Courier New, monospace',
+                    size=18,
+                    color='#7f7f7f'
+                    )
+                ),
+            yaxis=dict(
+                title='Frequency',
+                titlefont=dict(
+                    family='Courier New, monospace',
+                    size=18,
+                    color='#7f7f7f'
+                    )
+                )
+            )    
 
 fig = dict(data=data, layout=layout)
 
