@@ -77,11 +77,11 @@ df_seasonal = df_main[df_main['is_seasonal'] == 't']
 
 ## Comparison
 
-# Distribution
-trace1 = Histogram(x=df_beer['Price-per-10-shots'], opacity=0.75,name='Beer')
-trace2 = Histogram(x=df_sake['Price-per-10-shots'], opacity=0.75,name='Sake')
-trace3 = Histogram(x=df_gin['Price-per-10-shots'], opacity=0.75,name='Gin')
-trace4 = Histogram(x=df_tequila['Price-per-10-shots'], opacity=0.75,name='Tequila')
+# Distribution. Manny - Makes more sense to use prob. density?
+trace1 = Histogram(x=df_beer['Price-per-10-shots'],histnorm='probability density', opacity=0.75,name='Beer')
+trace2 = Histogram(x=df_sake['Price-per-10-shots'],histnorm='probability density', opacity=0.75,name='Sake')
+trace3 = Histogram(x=df_gin['Price-per-10-shots'],histnorm='probability density', opacity=0.75,name='Gin')
+trace4 = Histogram(x=df_tequila['Price-per-10-shots'],histnorm='probability density', opacity=0.75,name='Tequila')
 data = [trace1, trace2, trace3, trace4]
 layout = Layout(barmode='overlay',
                 title='Cost of Alcohol Converting to 10 Vodka Shots Equivalent',
@@ -107,4 +107,71 @@ fig = dict(data=data, layout=layout)
 
 plotly.offline.plot(fig, filename='Beer vs. Sake')
 
-# Primary Category
+'''Here we want to create a World Map that has number of distinct alcohol count that's in LCBO'''
+''' I dont like the colour scheme of the map, please change - Manny'''
+#Load country code for Geo Map
+CountryCodeLoc = 'CountryCode.csv'
+df_CountryCode = pd.read_csv(CountryCodeLoc)
+#Save the country code to a dictionary
+CountryCode_dict = {}
+for i in range(len(df_CountryCode)):
+    CountryCode_dict[df_CountryCode['COUNTRY'][i]] = df_CountryCode['CODE'][i]
+#Map each LCBO Country to a country code, and count no. of alcohol produce from the country
+df_Country = pd.DataFrame(data=(df_main['Country'].unique()), columns = ['Country'])
+df_Country['AreaCode'] = ""
+df_Country['AlcoholCount'] = ""
+for i in range(len(df_Country)):
+    
+    if df_Country['Country'][i] in CountryCode_dict:
+        df_Country['AreaCode'][i] = CountryCode_dict[df_Country['Country'][i]]
+    elif df_Country['Country'][i] =='South Korea':
+        df_Country['AreaCode'][i] = 'KOR'
+    elif df_Country['Country'][i] =='Republic of Macedonia':
+        df_Country['AreaCode'][i] = 'MKD'
+    elif df_Country['Country'][i] =='Caribbean':    #Captain Morgan 
+        df_Country['AreaCode'][i] = 'PRI'
+    elif df_Country['Country'][i] =='USA':    #Captain Morgan 
+        df_Country['AreaCode'][i] = 'USA'        
+    else:
+        print(df_Country['Country'][i]," has no area code!!!")   
+        
+    df_Country['AlcoholCount'][i] = (df_main['Country']==df_Country['Country'][i]).sum() #just summing up all the distinct alcohol from country[i]
+
+
+data = [ dict(
+        type = 'choropleth',
+        locations = df_Country['AreaCode'],
+        z = df_Country['AlcoholCount'],
+        text = df_Country['Country'],
+        #colorscale = [[0,"rgb(5, 10, 172)"],[0.35,"rgb(40, 60, 190)"],[0.5,"rgb(70, 100, 245)"],\
+        #    [0.6,"rgb(90, 120, 245)"],[0.7,"rgb(106, 137, 247)"],[1,"rgb(220, 220, 220)"]],
+        colorscale = 'Earth',
+        autocolorscale = False,
+        reversescale = True,
+        marker = dict(
+            line = dict (
+                color = 'rgb(180,180,180)',
+                width = 0.5
+            ) ),
+        colorbar = dict(
+            autotick = False,
+            tickprefix = '$',
+            title = 'Number of Distinct Alcohol in LCBO'),
+      ) ]
+
+layout = dict(
+    title = 'Number of Distinct Alcohol in LCBO',
+    geo = dict(
+        showframe = False,
+        showcoastlines = False,
+        projection = dict(
+            type = 'Mercator'
+        )
+    )
+)
+
+fig = dict( data=data, layout=layout )
+plotly.offline.plot( fig, validate=False, filename='d3-world-map' )
+
+
+
